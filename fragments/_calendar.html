@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow" />
+  <script src="/scripts/fragment.js" type="text/javascript"></script>
+</head>
+<body>
+  <style>
+    .weekday, .day_picker {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+    }
+    .month_picker {
+      text-align: center;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0.5em;
+    }
+    .month_picker > * {
+      flex: 1 1 auto;
+      text-decoration: none;
+    }
+    .day_picker button.hide-date {
+      display:none;
+    }
+  </style>
+  <section>
+      <div class="month_picker">
+        <b>
+          <span class="date_month"></span>
+          <span class="date_year"></span>
+        </b>
+        <button class="previous_month" type="button">Prev</button>
+        <button class="today_switch" type="button">Today</button>
+        <button class="next_month" type="button">Next</button>
+      </div>
+      <div class="weekday">
+        <div>Su</div>
+        <div>Mo</div>
+        <div>Tu</div>
+        <div>We</div>
+        <div>Th</div>
+        <div>Fr</div>
+        <div>Sa</div>  
+      </div>
+      <div class="day_picker">
+        <button data-day="1" type="button">1</button>
+        <button data-day="2" type="button">2</button>
+        <button data-day="3" type="button">3</button>
+        <button data-day="4" type="button">4</button>
+        <button data-day="5" type="button">5</button>
+        <button data-day="6" type="button">6</button>
+        <button data-day="7" type="button">7</button>  
+        <button data-day="8" type="button">8</button>
+        <button data-day="9" type="button">9</button>
+        <button data-day="10" type="button">10</button>
+        <button data-day="11" type="button">11</button>
+        <button data-day="12" type="button">12</button>
+        <button data-day="13" type="button">13</button>
+        <button data-day="14" type="button">14</button>
+        <button data-day="15" type="button">15</button>
+        <button data-day="16" type="button">16</button>
+        <button data-day="17" type="button">17</button>  
+        <button data-day="18" type="button">18</button>
+        <button data-day="19" type="button">19</button>
+        <button data-day="20" type="button">20</button>
+        <button data-day="21" type="button">21</button>
+        <button data-day="22" type="button">22</button>
+        <button data-day="23" type="button">23</button>
+        <button data-day="24" type="button">24</button>
+        <button data-day="25" type="button">25</button>
+        <button data-day="26" type="button">26</button>
+        <button data-day="27" type="button">27</button>  
+        <button data-day="28" type="button">28</button>
+        <button data-day="29" type="button">29</button>
+        <button data-day="30" type="button">30</button>
+        <button data-day="31" type="button">31</button>
+      </div>
+  </section>
+  <script>
+    // * * * * *
+    // inside the iframe you can access attributes on the iframe element
+    // via the `window.frameElement`. Outside the iframe the attributes have
+    // been copied to the script tag `document.currentScript`
+    // * * * * *
+    ;(async () => {
+      <!-- Executes only when copied into the parent DOM -->
+      if(window.top == window.self) { 
+        const scope = document.currentScript.getAttribute('data-scope');
+        const fragment = document.querySelector(`section[data-scope='${scope}']`);     
+        
+       class Calendar {
+          #scope;
+          #fragment;
+          #storeName;
+
+          constructor(scope, fragment) {
+            this.#scope = scope;
+            this.#fragment = fragment;
+            this.#storeName = `selected-date-${scope}`;
+            this.#buildCalendar();
+          }
+          
+          getFragment() {
+            return this.#fragment;
+          }
+         
+          setDate(date, rebuild) {
+            localStorage.setItem(this.#storeName, date)
+            if(rebuild){
+              this.#buildCalendar();
+            }
+          }
+                  
+          getDate() {
+            let date = localStorage.getItem(this.#storeName);
+            if(!date || date === 'null')
+            {
+              let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+              this.setDate(today.getTime(), false);
+            }
+            
+            return localStorage.getItem(this.#storeName) 
+          }
+         
+          showDots(items) {
+            // reset the buttons
+            let dayBtns = this.#fragment.querySelectorAll('.day_picker button');
+            for (let btn of dayBtns) { 
+              btn.innerHTML = `${btn.getAttribute("data-day")}<br/>`;
+            }
+
+            // add in the dots
+            for(let detail of items) {
+              var date = new Date(parseInt(detail.date));
+              let btn = this.#fragment.querySelector(`[data-day='${date.getDate()}']`);
+
+              if(btn.getAttribute("data-date") == detail.date)
+              {
+                btn.innerHTML += `<span style="color: ${detail.color}">${detail.symbol}</span> `;
+              }
+            }
+          }
+
+          #buildCalendar() {
+            let today = new Date();
+            let date = new Date(parseInt(this.getDate()));
+
+            // reset the calendar
+            if(this.#fragment.querySelector('.selected-date') != null) {
+              this.#fragment.querySelector('.selected-date').classList.remove("selected-date");
+            }
+
+            if(this.#fragment.querySelector('.hide-date') != null) {
+              let hidden = this.#fragment.querySelectorAll('.hide-date');
+              for (let hide of hidden) {
+                hide.classList.remove("hide-date");
+              }
+            }
+
+            if(this.#fragment.querySelector('.today') != null) {
+              this.#fragment.querySelector('.today').classList.remove("today");
+            }
+            
+            let firstday = new Date(date.getFullYear(), date.getMonth(), 1);
+            let lastday = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            // highligh today
+            if(today.getFullYear() == date.getFullYear() &&
+                today.getMonth() == date.getMonth() )
+            {
+              this.#fragment.querySelector(`[data-day='${today.getDate()}']`).classList.add("today");
+            }
+
+            // set the calendar label
+            this.#fragment.querySelector('.date_month').innerHTML = date.toLocaleString('default', { month: 'long' });
+            this.#fragment.querySelector('.date_year').innerHTML = date.getFullYear();
+
+            // set the selected date
+            this.#fragment.querySelector(`[data-day='${date.getDate()}']`).classList.add("selected-date");
+
+            // shift the calendar grid
+            this.#fragment.querySelector(`[data-day='1']`).style["grid-column"] = firstday.getDay() + 1;
+
+            // hide extra days
+            for(var i = 28; i < 32; i++) {
+              if(i > lastday.getDate()) {
+                this.#fragment.querySelector(`[data-day='${i}']`).classList.add("hide-date");
+              }
+            }
+
+            // set up the data attributes for the day buttons
+            let dayBtns = this.#fragment.querySelectorAll('.day_picker button');
+            for (let btn of dayBtns) { 
+              var day = btn.getAttribute('data-day');
+              var btnDate = new Date(date.getFullYear(), date.getMonth(), day).getTime();
+              btn.setAttribute('data-date',btnDate);
+            }
+
+            // set up the data attributes for previous, next, and today
+            let previous = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+            let next = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+            this.#fragment.querySelector('.previous_month').setAttribute('data-date', previous.getTime());
+            this.#fragment.querySelector('.next_month').setAttribute('data-date', next.getTime());
+            this.#fragment.querySelector('.today_switch').setAttribute('data-date', new Date().getTime());
+          }      
+        }
+        
+        const calendar = new Calendar(scope, fragment);
+        
+        //buildCalendar();
+        
+        /*
+         *
+         *  EVENT LISTENERS
+         *
+         */
+        // set up click events on the calendar
+        fragment.addEventListener("click", (event) => {
+          
+          // the next/previous month click
+          if(event.target.classList.contains('next_month') ||
+              event.target.classList.contains('previous_month') ||
+              event.target.classList.contains('today_switch')) {
+            
+            let date = new Date(parseInt(event.target.getAttribute("data-date")));
+            calendar.setDate(event.target.getAttribute("data-date"), true)
+            fragment.querySelector(`[data-day='${date.getDate()}']`).focus();   
+            fragment.dispatchEvent(new CustomEvent('calendar-month-changed'));  
+            return;
+          }
+          
+          // the date button clicks
+          if(event.target.getAttribute('type') === 'button' || event.target.parentElement.getAttribute('type')  === 'button') {
+            let button = event.target.parentElement.getAttribute('type')  === 'button' ?
+                event.target.parentElement : event.target;
+            if(document.querySelector('.selected-date') != null) {
+              document.querySelector('.selected-date')
+                .classList
+                .remove("selected-date");
+            }
+
+            button.classList.add("selected-date");
+            calendar.setDate(button.getAttribute("data-date"), false)
+            fragment.dispatchEvent(new CustomEvent('calendar-date-selected'));            
+            return;
+          }       
+        }); // end button click event handlers    
+        
+        document.dispatchEvent(new CustomEvent('calendar-ready', {
+          detail: calendar
+        }));     
+      } // parent DOM code       
+    })(); // end IIFE
+  </script>
+</body>
+</html>

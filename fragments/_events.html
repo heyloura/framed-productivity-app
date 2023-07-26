@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow" />
+  <script src="/scripts/fragment.js" type="text/javascript"></script>
+</head>
+<body>
+  <section>
+    <dialog class="event_dialog">
+      <form>
+        <fieldset>
+          <input name="id" type="hidden" />
+          
+          <label> 
+            <span>Start:</span>
+            <input name="start" type="date" />
+          </label>
+
+          <label> 
+            <span>Title:</span>
+            <input name="title" type="text" />
+          </label>
+
+          <label> 
+            <span>Description:</span>
+            <textarea name="description" style="height: 150px"></textarea>
+          </label>
+
+          <label> 
+            <span>Color:</span>
+            <input name="color" type="color" />
+          </label>
+        </fieldset>
+        <div>
+          <button formmethod="dialog">Cancel</button>
+          <button class="save_event" type="button">Save</button>
+        </div>
+      </form>
+    </dialog>
+    <header>
+      <b aria-live="polite">
+        <span class="number_events"></span> events for <span class="date_display"></span>
+      </b>
+      <button class="add_event smallbtn primarybtn">Add Event</button>
+    </header>  
+    <div class="list"></div>
+  </section>
+  <script>
+
+    
+    // * * * * *
+    // inside the iframe you can access attributes on the iframe element
+    // via the `window.frameElement`. Outside the iframe the attributes have
+    // been copied to the script tag `document.currentScript`
+    // * * * * *
+    ;(async () => {
+      <!-- Executes only when copied into the parent DOM -->
+      if(window.top == window.self) { 
+        const scope = document.currentScript.getAttribute('data-scope');
+        const fragment = document.querySelector(`section[data-scope='${scope}']`);     
+        
+        class EventList {
+          #scope;
+          #selectedDate = new Date().getTime();
+          #fragment;
+          #storeName;
+
+          constructor(scope, fragment) {
+            this.#scope = scope;
+            this.#fragment = fragment;
+            this.#storeName = `events-${this.#scope}`;
+          }
+          
+          getAll() {
+             let store = localStorage.getItem(this.#storeName) != null ? 
+                  localStorage.getItem(this.#storeName) : 
+                  '[]';
+              let date = this.#selectedDate;
+            
+             return JSON.parse(store);
+          }
+
+          getEvents() {
+             let store = localStorage.getItem(this.#storeName) != null ? 
+                  localStorage.getItem(this.#storeName) : 
+                  '[]';
+              let date = this.#selectedDate;
+            
+             return JSON.parse(store).filter(function(item) {
+                return item.start != undefined && 
+                  parseInt(date) === parseInt(item.start);
+              });
+          }
+          
+          getFragment() {
+            return this.#fragment;
+          }
+          
+          getEvent(id) {
+            return this.getAll().filter(function(item) {
+              return parseInt(item.id) === parseInt(id);
+            })[0];
+          }
+          
+          deleteEvent(id) {
+             let list = this.getAll().filter(function(item) {
+              return parseInt(item.id) != parseInt(id);
+            });
+
+            localStorage.setItem(this.#storeName, JSON.stringify(list));
+          }
+          
+          setDate(date) {
+            this.#fragment.querySelector('input[name="start"]').valueAsDate = new Date(parseInt(date));
+            this.#selectedDate = date;
+            this.#displayEvents();
+          }
+          
+          saveEvent(data) {
+            let events = this.getAll();
+            let date = new Date(data.start);
+
+            // trick to make date input match local timezone
+            let localDate = new Date(date.getTime() + Math.abs(date.getTimezoneOffset()*60000));          
+            data.start = localDate.getTime();
+
+            if(!data.id) {
+              data.id = new Date().getTime();
+              events.push(data);
+            } else {
+              events = events.map(function (event) {
+                if(event.id == data.id) {
+                  event = data;
+                }
+                return event;
+              });
+            }
+
+            localStorage.setItem(this.#storeName, JSON.stringify(events));
+            
+            // could do check here to see if we need to rerender
+            this.#displayEvents();
+          }
+
+          #displayEvents() {
+            let events = this.getEvents();   
+            let date = this.#selectedDate;
+            
+            this.#fragment.querySelector('.add_event').setAttribute("data-date", date);
+            this.#fragment.querySelector('.number_events').innerHTML = events.length;
+            this.#fragment.querySelector('.date_display').innerHTML = new Date(parseInt(date)).toLocaleString(
+                'en-US', 
+                { year: "numeric", month: "long", day: "numeric" }
+              );
+
+            this.#fragment.querySelector('.list').innerHTML = `
+              ${events.map(function (event) {
+                  return `
+                  <details>
+                    <summary style="color:${event.color};">
+                      <span style="color: #cad3f5;">
+                        ${event.title}
+                      </span>
+                    </summary>
+                    <div class="details">
+                      <p>${event.description}</p>
+                      <p>
+                        <button data-action="delete" data-id="${event.id}" class="delete smallbtn">Delete</button>
+                        <button data-action="edit" data-id="${event.id}" class="smallbtn">Edit</button>
+                      </p>
+                    </div>
+                  </details>
+                  `;
+                }).join('')}
+            `;
+          }      
+        }
+        
+        const eventList = new EventList(scope, fragment);
+        
+        /*
+         *
+         *  EVENT LISTENERS
+         *
+         */        
+        //set up a click listener for the whole list of events
+        fragment.addEventListener("click", (event) => {
+
+          //the add event click
+          if(event.target.classList.contains('add_event')) {
+            fragment.querySelector(".event_dialog").showModal();
+            return;
+          }
+
+          //the save event click
+          if(event.target.classList.contains('save_event')) {
+            event.preventDefault();
+            let form = fragment.querySelector("form");
+            let data = Object.fromEntries(new FormData(form));
+            
+            eventList.saveEvent(data);            
+            fragment.dispatchEvent(new CustomEvent('events-changed'));    
+            form.reset();
+            fragment.querySelector(".event_dialog").close();
+            return;
+          }
+
+          //the edit event click
+          if(event.target.getAttribute('data-action') == "edit") {
+            let id = event.target.getAttribute('data-id');
+            let item = eventList.getEvent(id);
+            
+            fragment.querySelector('form input[name="id"]').value = item.id;
+            fragment.querySelector('form input[name="start"]').valueAsDate = new Date(parseInt(item.start));
+            fragment.querySelector('form input[name="title"]').value = item.title;
+            fragment.querySelector('form textarea[name="description"]').value = item.description;
+            fragment.querySelector('form input[name="color"]').value = item.color;
+
+            fragment.querySelector(".event_dialog").showModal();
+          }
+
+          //the delete event click
+          if(event.target.getAttribute('data-action') == "delete"){  
+            event.preventDefault(); 
+            
+            if(confirm(`Are you sure you want to delete this?`))
+            {
+              let id = event.target.getAttribute('data-id');
+              eventList.deleteEvent(id);
+              fragment.dispatchEvent(new CustomEvent('events-changed'));
+            }
+            
+            return;
+          }
+        });
+        
+        // tell the parent that the event list is ready
+        document.dispatchEvent(new CustomEvent('events-ready', {
+          detail: eventList
+        }));         
+      } // parent DOM code       
+    })(); // end IIFE
+  </script>
+</body>
+</html>
