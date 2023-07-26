@@ -1,0 +1,143 @@
+html 
+{
+    height:100%;
+    box-sizing: border-box;
+}
+body {
+    height:100%;
+    background-color: #1e2030;
+    color: #cad3f5;
+    font: 1.2em / 1.5 Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
+    font-weight: 300;
+    padding: 0;
+    margin: 0;
+    min-height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+* 
+{
+    box-sizing: inherit;
+}
+header {
+  color: #f5a97f;
+  font-weight: bold;
+  text-align: center;
+  font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+}
+main {
+  width: 100%;
+  max-width: 700px;
+  margin: 0px auto;
+  padding: 1em;
+}
+footer nav {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: #181926; 
+  text-align: center;
+}
+footer nav > * {
+  flex: 1 1 auto;
+  text-decoration: none;
+  padding: 0.5em;
+  color: #cad3f5;
+  border: 1px solid black;
+}
+button {
+ background-color: #24273a;
+ color: #cad3f5;
+ border: 1px solid #494d64;
+ box-shadow: #363a4f 0 1px 1px 0;
+ min-height: 2.5em;
+}
+button:active {
+  transform:translateY(2px);
+  box-shadow: 0 0 0;
+  outline: 0;
+}
+details {
+  cursor: pointer;
+}
+section header {
+  text-align: left;
+  margin: 1em 0em;
+}
+p {
+  margin: 0.25em 0em;
+}
+a {
+  color: #8aadf4;
+}
+a:visited {
+  color: #c6a0f6;
+}
+hr {
+  border: 1px solid #181926;
+  margin: 1em;
+}
+.smallbtn {
+  min-height: 1.8em;
+  border-radius: 0.3em; 
+}
+.primarybtn {
+  background-color: #c6a0f6;
+  color: #24273a;
+}
+.delete {
+  color:#ed8796;
+}
+/* Styles for the calendar fragment */
+.day_picker button.selected-date {      
+  background: #494d64;
+  font-weight: 600;
+  color: 	#ffffff;
+}
+.day_picker button.today {
+  background-color: #363a4f;
+}
+/* Styles for forms */
+input, select, textarea {
+  background: #1e2030;
+  color: #cad3f5;
+  border: 1px solid #000000;
+  padding: 0.5em;
+}
+input[type="color"]{
+  height: 3em;
+}
+input[type="checkbox"]{
+  width: initial;
+}
+fieldset {
+  border: 1px solid black;
+  background: #181926;
+}
+/* Styles for forms */
+dialog {
+  background: #181926;
+}
+dialog label {
+  display: block;
+  color: #cad3f5;
+}
+dialog label > * {
+  display: block;
+  width: 100%
+}
+dialog label > span {  
+  font-weight: 600;
+}
+dialog fieldset {
+  border: 0;
+}
+dialog::backdrop {
+  background: rgba(36, 39, 58, 0.8);
+}
+.details {
+  padding:0.25em; 
+  border:1px solid #000000;
+  background-color:#181926; 
+  margin: 0.5em;
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="a small local-storage calendar and todo list application">
+  <title>Framed* Productivity App</title>
+  <script src="scripts/disappearingFrame.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="./styles/style.css" /> 
+  <link rel="manifest" href="./manifest.json">
+</head>
+<body>
+  <iframe aria-busy="true" 
+      src="./fragments/_header.html" 
+      loading="lazy"
+      onload="disappear(this)"></iframe>
+  <main>
+    <iframe aria-busy="true"
+      id="main_calendar"
+      src="./fragments/_calendar.html" 
+      loading="lazy"
+      onload="disappear(this)"></iframe>
+    <iframe aria-busy="true"
+      id="event_list"
+      src="./fragments/_events.html" 
+      loading="lazy"
+      onload="disappear(this)"></iframe>
+    <iframe aria-busy="true"
+      id="main_todos"
+      src="./fragments/_todos.html" 
+      loading="lazy"
+      onload="disappear(this)"></iframe>
+  </main>
+  <footer aria-live="polite">
+    <iframe aria-busy="true" 
+      src="./fragments/_nav.html" 
+      loading="lazy"
+      onload="disappear(this)"></iframe>
+  </footer>
+  <script> 
+    /*
+     * Sevice Worker
+     */   
+    if (navigator && navigator.serviceWorker) {
+      navigator.serviceWorker.register('serviceWorker.js');
+    }
+    
+     let calendar;
+     let eventList;
+     let todoList;
+    
+      var calendarReady = new Promise(function(resolve) {
+        document.addEventListener("calendar-ready", function (event) {
+           calendar = event.detail;
+           resolve();
+         }, false);
+      });
+      var eventListReady = new Promise(function(resolve) {
+        document.addEventListener("events-ready", function (event) {
+           eventList = event.detail;
+           resolve();
+         }, false);
+      });
+      var todoListReady = new Promise(function(resolve) {
+        document.addEventListener("todos-ready", function (event) {
+           todoList = event.detail;
+           resolve();
+         }, false);
+      });
+
+      Promise.all([calendarReady, eventListReady, todoListReady]).then(function() {
+        todoList.setDisplay(false, false);
+        displayEventsAndDots(); 
+        
+        // Calendar events
+        calendar.getFragment().addEventListener('calendar-date-selected', function (event) {
+          displayEventsAndDots();
+        });
+        
+        calendar.getFragment().addEventListener('calendar-month-changed', function (event) {    
+          displayEventsAndDots();
+        });
+        
+        // Event list events
+        eventList.getFragment().addEventListener('events-changed', function (event) {
+          displayEventsAndDots(); 
+        });
+      }); // end ready all
+    
+    function displayEventsAndDots() {
+       eventList.setDate(calendar.getDate());
+       todoList.setDate(calendar.getDate());
+       
+       let dots = [];
+       let events = eventList.getAll().map(event => {
+            return {date: event.start, color: event.color, symbol: '&#x25CF;'}; 
+        });
+       let scheduled = todoList.getAll().filter(todo => {
+            return todo.due && !todo.done;
+        });
+       let todos = scheduled.map(todo => {
+            return {date: todo.due, color: todo.color, symbol: '&#x25A2;'}; 
+        });
+       dots.push(...events);
+       dots.push(...todos);
+      
+       calendar.showDots(dots);
+    }
+  </script>
+</body>
+</html>

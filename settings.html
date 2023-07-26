@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="a small local-storage calendar and todo list application">
+  <title>Framed* Productivity App</title>
+  <script src="/scripts/disappearingFrame.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="manifest" href="./manifest.json">
+</head>
+<body>
+  <iframe aria-busy="true" 
+      height="32"
+      src="./fragments/_header.html" 
+      loading="lazy"
+      onload="disappear(this)"></iframe>
+  <main>
+    <p>Save a copy of your data.</p>
+    <iframe aria-busy="true" 
+      height="24"
+      src="./fragments/_save.html" 
+      id="download"
+      loading="lazy"
+      title="contains button to save data from local storage"
+      onload="disappear(this)"></iframe>
+    <hr/>
+    <p>Upload a copy of your data. This will overwrite what is
+      currently saved and cannot be undone.</p>
+    <iframe aria-busy="true"
+      height="86"
+      src="./fragments/_import.html" 
+      id="import"
+      loading="lazy"
+      title="import saved data to local storage"
+      onload="disappear(this)"></iframe>
+  </main>
+  <footer aria-live="polite">
+    <iframe aria-busy="true" 
+      src="./fragments/_nav.html" 
+      loading="lazy"
+      title="contains app navigation links"
+      onload="disappear(this)"></iframe>
+  </footer>
+</body>
+</html>
