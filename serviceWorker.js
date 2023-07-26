@@ -13,16 +13,16 @@ self.addEventListener('install', function (event) {
 
 	// Cache the offline core
 	event.waitUntil(caches.open(`${version}_core`).then(function (cache) {
-    cache.add(new Request('/fragments/_calendar.html'));
-    cache.add(new Request('/fragments/_events.html'));
-    cache.add(new Request('/fragments/_header.html'));
-    cache.add(new Request('/fragments/_nav.html'));
-    cache.add(new Request('/fragments/_todos.html'));
-    cache.add(new Request('/fragments/_save.html'));
-    cache.add(new Request('/fragments/_import.html'));
-    cache.add(new Request('/styles/style.css'));
-    cache.add(new Request('/scripts/disappearingFrame.js'));
-    cache.add(new Request('/scripts/fragment.js'));
+    cache.add(new Request('./fragments/_calendar.html'));
+    cache.add(new Request('./fragments/_events.html'));
+    cache.add(new Request('./fragments/_header.html'));
+    cache.add(new Request('./fragments/_nav.html'));
+    cache.add(new Request('./fragments/_todos.html'));
+    cache.add(new Request('./fragments/_save.html'));
+    cache.add(new Request('./fragments/_import.html'));
+    cache.add(new Request('./styles/style.css'));
+    cache.add(new Request('./scripts/disappearingFrame.js'));
+    cache.add(new Request('./scripts/fragment.js'));
     cache.add(new Request('manifest.json'));
 		return cache;
 	}));
