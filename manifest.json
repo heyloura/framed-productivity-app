@@ -3,10 +3,10 @@
   "short_name": "Framed*",
   "theme_color": "#f5a97f",
   "background_color": "#1e2030",
-  "display": "browser",
+  "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "index.html",
+  "start_url": "https://heyloura.github.io/framed-productivity-app/index.html",
   "icons": [
     {
       "src": "images/icons/icon-72x72.png",
