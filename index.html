@@ -41,7 +41,7 @@
      * Sevice Worker
      */   
     if (navigator && navigator.serviceWorker) {
-      navigator.serviceWorker.register('serviceWorker.js');
+      navigator.serviceWorker.register('serviceWorker.js', { scope: '/' });
     }
     
      let calendar;
