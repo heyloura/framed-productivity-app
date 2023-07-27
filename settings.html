@@ -42,9 +42,9 @@
       onload="disappear(this)"></iframe>
   </footer>
   <script>
-     if (navigator && navigator.serviceWorker) {
-        navigator.serviceWorker.register('serviceWorker.js');
-     }
+    if (navigator && navigator.serviceWorker) {
+      navigator.serviceWorker.register('serviceWorker.js', { scope: '/framed-productivity-app/' });
+    }
   </script>
 </body>
 </html>
