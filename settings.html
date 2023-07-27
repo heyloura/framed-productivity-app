@@ -41,5 +41,10 @@
       title="contains app navigation links"
       onload="disappear(this)"></iframe>
   </footer>
+  <script>
+     if (navigator && navigator.serviceWorker) {
+        navigator.serviceWorker.register('/framed-productivity-app/serviceWorker.js', {scope: '/framed-productivity-app'});
+     }
+  </script>
 </body>
 </html>
