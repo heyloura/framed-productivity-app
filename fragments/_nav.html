@@ -7,11 +7,9 @@
     window.addEventListener("DOMContentLoaded", (event) => {
       let url = document.referrer.substring(document.referrer.lastIndexOf('/') + 1);
       let navs = document.querySelectorAll('#navigation a');
-
-      console.log(url)
-
+      
       for (let nav of navs) {
-        if(nav.getAttribute('href') == `/${url}` || 
+        if(nav.getAttribute('href') == `${url}` || 
              (nav.getAttribute('href') == '/' && url == 'index.html')) {
           nav.setAttribute('aria-current','page')
         }
