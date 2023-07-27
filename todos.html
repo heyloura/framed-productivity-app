@@ -31,9 +31,9 @@
     /*
      * Sevice Worker
      */   
-     if (navigator && navigator.serviceWorker) {
-        navigator.serviceWorker.register('serviceWorker.js');
-      }
+    if (navigator && navigator.serviceWorker) {
+      navigator.serviceWorker.register('serviceWorker.js', { scope: '/framed-productivity-app/' });
+    }
     
      let todos;
 
