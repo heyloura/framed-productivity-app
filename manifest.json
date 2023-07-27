@@ -5,7 +5,7 @@
   "background_color": "#1e2030",
   "display": "standalone",
   "orientation": "portrait",
-  "scope": "/",
+  "scope": "/framed-productivity-app",
   "start_url": "/framed-productivity-app/index.html",
   "icons": [
     {
