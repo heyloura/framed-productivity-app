@@ -204,7 +204,7 @@
             }
 
             localStorage.setItem(this.#storeName, JSON.stringify(todos));
-            
+            this.#fragment.querySelector('input[name="due"]').valueAsDate = new Date(parseInt(this.#selectedDate));
             // could do check here to see if we need to rerender
             this.#displayTodos();
           }
@@ -333,8 +333,7 @@
 
             form.reset();
             todoList.saveTodo(data);            
-            fragment.dispatchEvent(new CustomEvent('todos-changed'));    
-            this.#fragment.querySelector('input[name="due"]').valueAsDate = new Date(parseInt(this.#selectedDate));
+            fragment.dispatchEvent(new CustomEvent('todos-changed'));   
             fragment.querySelector(".todo_dialog").close();
             return;
           }
