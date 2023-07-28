@@ -330,10 +330,11 @@
             todo.preventDefault();
             let form = fragment.querySelector("form");
             let data = Object.fromEntries(new FormData(form));
-            
+
+            form.reset();
             todoList.saveTodo(data);            
             fragment.dispatchEvent(new CustomEvent('todos-changed'));    
-            form.reset();
+            this.#fragment.querySelector('input[name="due"]').valueAsDate = new Date(parseInt(this.#selectedDate));
             fragment.querySelector(".todo_dialog").close();
             return;
           }
