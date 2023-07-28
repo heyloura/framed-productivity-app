@@ -98,11 +98,12 @@ hr {
 /* Styles for the calendar fragment */
 .day_picker button.today {
   background-color: #363a4f;
+  color: 	#000000;
 }
 .day_picker button.selected-date {      
   background: #c6a0f6;
   font-weight: 600;
-  color: 	#ffffff;
+  color: #ffffff;
 }
 /* Styles for forms */
 input, select, textarea {
