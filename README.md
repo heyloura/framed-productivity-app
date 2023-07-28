@@ -1,6 +1,16 @@
-# Hello 
-This is an experiment in using iframes to make a sort-of web-framework. 
+# The Framed* Framework 
+This is a personal experiment in using iframes to make a strange sort-of web-framework. The iframes are loaded into the DOM and then removed. Script tags are preserved and executed and the CSS has primitive scoping. All in two tiny JavaScript files (see the scripts folder). This allows you to write html fragments and import them. No other dependencies and no build step. I was hoping to make something more friendly to beginner web developers just getting started with JavaScript, CSS, and HTML then modern webcomponents or some other frameworks.
 
-I'm testing out building a local-only productivity app.
+Another bonus: If your fragments don't need JavaScript then the iframe offers a convienent noJS default experience.
 
-The preview doesn't work in Glitch, open the preview in a new window to see it working.
+# Simple Productivity App
+A simple productivity app can be boiled down to a todo list and a calendar. This sample app is local only with offline support. You can export data and import it.
+
+# Known Limitations
+- While I've tested nesting the fragments, I haven't tested deeply nested fragments.
+- The app uses an anchor tag to export the data. I'm sure there is some browser dependent limit to how big the string could get.
+- While you can put custom attributes starting with `data-` on the iframe and it will make them available, I haven't really tested out this functionality.
+
+# Todo
+- Sort the events alphabetically
+- 
