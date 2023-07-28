@@ -71,6 +71,9 @@ section header {
   text-align: left;
   margin: 1em 0em;
 }
+section:last-child {
+  margin-bottom: 3em;
+}
 p {
   margin: 0.25em 0em;
 }
