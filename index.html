@@ -84,6 +84,10 @@
         eventList.getFragment().addEventListener('events-changed', function (event) {
           displayEventsAndDots(); 
         });
+
+        todoList.getFragment().addEventListener('todos-changed', function (event) {
+          displayEventsAndDots(); 
+        });
       }); // end ready all
     
     function displayEventsAndDots() {
