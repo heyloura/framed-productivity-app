@@ -1,4 +1,4 @@
-let version = '0.0.15';
+let version = '0.0.16';
 
 // Cache IDs
 let coreID = `${version}_core`;
@@ -20,8 +20,11 @@ self.addEventListener('install', function (event) {
     cache.add(new Request('./fragments/_todos.html'));
     cache.add(new Request('./fragments/_save.html'));
     cache.add(new Request('./fragments/_import.html'));
+    cache.add(new Request('./fragments/_rrule.html'));
     cache.add(new Request('./styles/style.css'));
+    cache.add(new Request('./styles/utopia.css'));
     cache.add(new Request('./scripts/disappearingFrame.js'));
+    cache.add(new Request('./scripts/rrule.min.js'));
     cache.add(new Request('./scripts/fragment.js'));
     cache.add(new Request('manifest.json'));
 		return cache;
