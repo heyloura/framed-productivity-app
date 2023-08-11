@@ -9,22 +9,18 @@
   <style>
     details.todo > summary {
       list-style-type: none;
-      text-indent: -1em;
-      padding-left: 1em;
+      text-indent: -var(--space-s);
+      padding-left: var(--space-s);
     }
     .todoText {
-      color: #cad3f5;
-      padding-left: 0.2em;
+      padding-left: var(--space-3xs);
     }
     section header, .header {
-        margin-top: 1em;
+      margin: var(--space-xs) var(--space-xs) var(--space-xs) 0;
     }
     small {
-      border: 1px solid #cad3f5;
-      border-radius: 0.5em;
-      font-size: .6em;
-      padding: 0.25em;
-      margin-left: 0.5em;
+      font-size: var(--step--2);
+      margin-left: var(--space-3xs);
     }
   </style>
   <section>
@@ -61,7 +57,7 @@
         </fieldset>
         <div>
           <button formmethod="dialog">Cancel</button>
-          <button class="save_todo" type="button">Save</button>
+          <button class="save_todo save" type="button">Save</button>
         </div>
       </form>
     </dialog>
@@ -92,8 +88,6 @@
     </section>
   </section>
   <script>
-
-    
     // * * * * *
     // inside the iframe you can access attributes on the iframe element
     // via the `window.frameElement`. Outside the iframe the attributes have
@@ -177,6 +171,10 @@
             this.#displayTodos();
           }
           
+          getDate() {
+            return this.#selectedDate;
+          }
+          
           setDisplay(scheduled, done) {
             this.#displayScheduled = scheduled;
             this.#displayDone = done;
@@ -204,8 +202,11 @@
             }
 
             localStorage.setItem(this.#storeName, JSON.stringify(todos));
+            fragment.dispatchEvent(new CustomEvent('todos-changed')); 
             this.#fragment.querySelector('input[name="due"]').valueAsDate = new Date(parseInt(this.#selectedDate));
+
             // could do check here to see if we need to rerender
+            this.#fragment.querySelector("form").reset();
             this.#displayTodos();
           }
 
@@ -277,7 +278,7 @@
           }
           
           #render(todo) {
-              let dateColor = parseInt(todo.due) < this.#selectedDate ? '#ed8796' : '#b8c0e0';
+              let dateColor = parseInt(todo.due) < this.#selectedDate ? 'var(--red)' : 'var(--text)';
               let dateDisp = todo.due && !todo.done ? `&nbsp;<small style="color: ${dateColor}">${new Date(parseInt(todo.due)).toLocaleString('en-US', { year: "numeric", month: "long", day: "numeric" })}</small>` : '';
               let icon = !todo.done ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-square" viewbox="0 0 16 16">
                   <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
@@ -287,7 +288,7 @@
                   <path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/>
                 </svg>`
               let text = todo.done ? `<s>${todo.todo}</s>` : todo.todo;
-              let checkoff = !todo.done ? `<button data-action="done" data-id="${todo.id}" class="smallbtn">&#x2713; Done</button>` : '';
+              let checkoff = !todo.done ? `<button data-action="done" data-id="${todo.id}" class="smallbtn save">&#x2713; Done</button>` : '';
               return `
               <details class="todo">
                 <summary style="color:${todo.color};">
@@ -313,7 +314,7 @@
         
         /*
          *
-         *  todo LISTENERS
+         *  EVENT LISTENERS
          *
          */        
         //set up a click listener for the whole list of todos
@@ -321,6 +322,10 @@
 
           //the add todo click
           if(todo.target.classList.contains('add_todo')) {
+            fragment.querySelector("form").reset();
+            fragment.querySelector('form input[name="id"]').value = '';
+            var date = todoList.getDate();
+            fragment.querySelector('form input[name="due"]').valueAsDate = new Date(parseInt(date));
             fragment.querySelector(".todo_dialog").showModal();
             return;
           }
@@ -330,10 +335,10 @@
             todo.preventDefault();
             let form = fragment.querySelector("form");
             let data = Object.fromEntries(new FormData(form));
-
+            
             form.reset();
-            todoList.saveTodo(data);            
-            fragment.dispatchEvent(new CustomEvent('todos-changed'));   
+            todoList.saveTodo(data);               
+            
             fragment.querySelector(".todo_dialog").close();
             return;
           }
@@ -342,14 +347,15 @@
           if(todo.target.getAttribute('data-action') == "edit") {
             let id = todo.target.getAttribute('data-id');
             let item = todoList.getTodo(id);
-            
+            fragment.querySelector('form input[name="id"]').value = '';
+            fragment.querySelector("form").reset();
             fragment.querySelector('form input[name="id"]').value = item.id;
             fragment.querySelector('form input[name="due"]').valueAsDate = new Date(parseInt(item.due));
             fragment.querySelector('form input[name="todo"]').value = item.todo;
             fragment.querySelector('form textarea[name="details"]').value = item.details;
             fragment.querySelector('form input[name="color"]').value = item.color;
             fragment.querySelector('form input[name="done"]').checked = item.done;
-
+            
             fragment.querySelector(".todo_dialog").showModal();
           }
           

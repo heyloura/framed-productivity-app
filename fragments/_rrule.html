@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow" />
+  <script src="../scripts/fragment.js" type="text/javascript"></script>
+</head>
+<body>
+  <style>
+    input[type="number"]{
+      max-width: 80px;
+    }
+    input[type="date"] {
+      max-width: 120px;
+    }
+    section {
+      display: flex;
+      width: 100%;
+    }
+    section > * {
+      flex: 1 1 auto;
+      margin-top: var(--space-s);
+    }
+    section > * input {
+      margin: 0px auto;
+      display: inline;
+    }
+    input[type="checkbox"] {
+      display: block;
+      margin: 0px;
+    }
+  </style>
+  <section>
+    <label> 
+      <span>Repeat?</span>
+      <input data-action="toggle" name="repeat" type="checkbox" />
+    </label>
+    <fieldset style="display:none;">
+    <legend>Schedule:</legend>
+      Every <input type="number" name="INTERVAL" min="1" value="1" />
+      <select name="FREQ">
+        <option value="YEARLY">Year(s)</option>
+        <option value="MONTHLY">Month(s)</option>
+        <option value="WEEKLY" selected="selected">Week(s)</option>
+        <option value="DAILY">Day(s)</option>
+      </select>
+      <section class="days_of_week">
+        <label>
+          Mo <input name="MO" type="checkbox" />
+        </label>
+        <label>
+          Tu <input name="TU" type="checkbox" />
+        </label>
+        <label>
+          We <input name="WE" type="checkbox" />
+        </label>
+        <label>
+          Th <input name="TH" type="checkbox" />
+        </label>
+        <label>
+          Fr <input name="FR" type="checkbox" />
+        </label>
+        <label>
+          Sa <input name="SA" type="checkbox" />
+        </label>
+        <label>
+          Su <input name="SU" type="checkbox" />
+        </label>
+      </section>    
+      <section>
+        <label>
+          ending <input name="UNTIL" type="date" />
+        </label>
+        <label>
+          or repeat <input name="COUNT" type="number" min="1" />
+        </label>
+      </section>
+      <hr/>
+      <p><b>Summary:</b> <span class="readable"></span></p>
+      <input type="hidden" name="RRULE" />
+    </fieldset>
+  </section>
+  <script>
+    // * * * * *
+    // inside the iframe you can access attributes on the iframe element
+    // via the `window.frameElement`. Outside the iframe the attributes have
+    // been copied to the script tag `document.currentScript`
+    // * * * * *
+    ;(async () => {
+      if(window.top == window.self) { 
+        const scope = document.currentScript.getAttribute('data-scope');
+        const fragment = document.querySelector(`section[data-scope='${scope}']`);
+        
+        class RruleUI {
+          #scope;
+          #fragment;
+          #selectedDateEl;
+
+          constructor(scope, fragment) {
+            this.#scope = scope;
+            this.#fragment = fragment;
+          }
+          
+          getFragment() {
+            return this.#fragment;
+          }
+          
+          setDateEl(el) {
+            this.#selectedDateEl = el;
+          }
+          
+          occursMonth(date, rruleStr) {
+            if(!rruleStr) { return []; }
+            let dateObj = new Date(parseInt(date));
+            let dateLocal = new Date(dateObj.getTime() + Math.abs(dateObj.getTimezoneOffset()*60000));
+
+            let firstday = new Date(dateLocal.getFullYear(), dateLocal.getMonth(), 1);
+            firstday.setMinutes(firstday.getMinutes() - 1);
+            let lastday = new Date(dateLocal.getFullYear(), dateLocal.getMonth() + 1, 0, 23, 59, 0);
+            
+            let rule = rrule.rrulestr(rruleStr);
+            return rule.between(firstday, lastday);
+          }
+          
+          occursOn(date, rruleStr) {
+            //console.log(rruleStr)
+            let dateObj = new Date(parseInt(date));
+            let dateLocal = new Date(dateObj.getTime() + Math.abs(dateObj.getTimezoneOffset()*60000));
+
+            let start = new Date(dateLocal.getFullYear(), dateLocal.getMonth(), dateLocal.getDate(), 0, 0, 0);
+            start.setMinutes(start.getMinutes() - 1);
+            let end = new Date(dateLocal.getFullYear(), dateLocal.getMonth(), dateLocal.getDate(), 23, 59, 0);
+
+            if(!rruleStr) { return false; }
+            let rule = rrule.rrulestr(rruleStr);
+            return rule.between(start, end).length > 0;
+          }
+          
+          editRrule (data) {
+            this.#fragment.querySelector('[name="repeat"]').checked = data.repeat == "on" ? true : false;
+            if(data.repeat == "on") {
+              this.#fragment.querySelector('fieldset').style.display = 'block';
+            }
+            else
+            {
+              this.#fragment.querySelector('fieldset').style.display = 'none';
+            }
+            this.#fragment.querySelector('[name="FREQ"]').value = data.FREQ ? data.FREQ : '';
+            this.#fragment.querySelector('[name="INTERVAL"]').value = data.INTERVAL ? data.INTERVAL : '';
+            this.#fragment.querySelector('[name="MO"]').checked = data.MO ? data.MO : false;
+            this.#fragment.querySelector('[name="TU"]').checked = data.TU ? data.TU : false;
+            this.#fragment.querySelector('[name="WE"]').checked = data.WE ? data.WE : false;
+            this.#fragment.querySelector('[name="TH"]').checked = data.TH ? data.TH : false;
+            this.#fragment.querySelector('[name="FR"]').checked = data.FR ? data.FR : false;
+            this.#fragment.querySelector('[name="SA"]').checked = data.SA ? data.SA : false;
+            this.#fragment.querySelector('[name="SU"]').checked = data.SU ? data.SU : false;
+            this.#fragment.querySelector('[name="COUNT"]').value = data.COUNT ? data.COUNT : '';
+            this.#fragment.querySelector('[name="UNTIL"]').value = data.UNTIL ? data.UNTIL : '';
+            this.buildRrule();
+          }
+          
+          display(rruleStr) {
+            let rule = rrule.rrulestr(rruleStr);
+            return rule.toText();
+          }
+         
+          buildRrule() {
+            let freq = this.#fragment.querySelector('[name="FREQ"]');
+            let interval = this.#fragment.querySelector('[name="INTERVAL"]');
+            let byDay = [...this.#fragment.querySelectorAll('.days_of_week input:checked')].map(day => day.name).join(',');
+            let count = this.#fragment.querySelector('[name="COUNT"]');
+            let until = this.#fragment.querySelector('[name="UNTIL"]');
+            
+            let start = new Date(this.#selectedDateEl.value);
+            let rruleStart = `;DTSTART=${new Date(start).toISOString().split('T')[0].replaceAll('-','')}T000000Z`; 
+            let rruleUntil = '';  
+            if(until.value != '') {
+              let untilDate = new Date(until.value);
+              rruleUntil = `;UNTIL=${new Date(untilDate).toISOString().split('T')[0].replaceAll('-','')}T000000Z`;     
+            }
+            
+            let rruleFreq = `FREQ=${freq.value}`;
+            let rruleInterval = `;INTERVAL=${interval.value}`;
+            let rruleByDay = freq.value === 'WEEKLY' && byDay != '' ? `;BYDAY=${byDay}` : '';
+            let rruleCount = count.value != '' ? `;COUNT=${count.value}` : '';      
+            let rruleTzid = `;TZID=${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+            let rruleStr = `RRULE:${rruleFreq}${rruleInterval}${rruleByDay}${rruleCount}${rruleUntil}${rruleStart}${rruleTzid}`;
+            
+            // display unadjusted rule string to the user.
+            let rule = rrule.rrulestr(rruleStr);
+            this.#fragment.querySelector('.readable').innerText = rule.toText();
+            
+            // check to see if UTC day of the week is offset
+            let today = new Date();
+            let todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            let todayDateUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+
+            if(todayDate.getDay() > todayDateUTC.getDay()){
+              // we need to move the days forward.
+              let days = this.#fragment.querySelectorAll('.days_of_week input:checked');
+              byDay = '';
+              for(var i = 0; i < days.length; i++) {
+                if(days[i].name == "MO"){
+                  byDay += "TU";
+                  break;
+                }
+                if(days[i].name == "TU"){
+                  byDay += "WE";
+                  break;
+                }
+                if(days[i].name == "WE"){
+                  byDay += "TH";
+                  break;
+                }
+                if(days[i].name == "TH"){
+                  byDay += "FR";
+                  break;
+                }
+                if(days[i].name == "FR"){
+                  byDay += "SA";
+                  break;
+                }
+                if(days[i].name == "SA"){
+                  byDay += "SU";
+                  break;
+                }
+                if(days[i].name == "SU"){
+                  byDay += "MO";
+                  break;
+                }        
+              }
+              
+              //adjust the start and until dates
+              if(until.value != '') {
+                let untilDate = new Date(until.value);
+                untilDate.setDate(untilDate.getDate() + 1);
+                rruleUntil = `;UNTIL=${new Date(untilDate).toISOString().split('T')[0].replaceAll('-','')}T000000Z`;     
+              }
+              start.setDate(start.getDate() + 1);
+              rruleStart = `;DTSTART=${new Date(start).toISOString().split('T')[0].replaceAll('-','')}T000000Z`;            
+            }
+            
+            // save the actual rule string to the object
+            rruleStr = `RRULE:${rruleFreq}${rruleInterval}${rruleByDay}${rruleCount}${rruleUntil}${rruleStart}${rruleTzid}`;
+            this.#fragment.querySelector('[name="RRULE"]').value = rruleStr;
+          }      
+        }
+        
+        const rruleui = new RruleUI(scope, fragment);
+        
+        /*
+         *
+         *  EVENT LISTENERS
+         *
+         */        
+        //set up a click listener for the whole rrule input area
+        document.addEventListener("reset", (event) => {
+          fragment.querySelector('fieldset').style.display = 'none';
+        });
+        
+        fragment.addEventListener("change", (event) => {
+          
+          // the repeat checkbox toggle
+          if(event.target.getAttribute('data-action') == 'toggle') {
+            if(event.target.checked){
+              fragment.querySelector('fieldset').style.display = 'block';
+            }
+            else
+            {
+              fragment.querySelector('fieldset').style.display = 'none';
+            }
+          }
+          
+          // toggle the day of the week selector
+          if(event.target.getAttribute('name') == 'FREQ' && event.target.value == "WEEKLY") { 
+            fragment.querySelector('.days_of_week').style.display = 'flex';
+          }
+          if(event.target.getAttribute('name') == 'FREQ' && event.target.value != "WEEKLY") {
+            fragment.querySelector('.days_of_week').style.display = 'none';
+          }
+          
+          // rebuild rrule based off of changes
+          rruleui.buildRrule();
+          
+        });
+        
+        // tell the parent that the event list is ready
+        document.dispatchEvent(new CustomEvent('rrule-ready', {
+          detail: rruleui
+        }));  
+        
+      } // parent DOM code  
+    })(); // end IIFE
+  </script>
+</body>
+</html>

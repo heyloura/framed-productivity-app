@@ -1,153 +1,151 @@
-html 
-{
-    height:100%;
-    box-sizing: border-box;
-}
 body {
-    height:100%;
-    background-color: #1e2030;
-    color: #cad3f5;
-    font: 1.2em / 1.5 Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
-    font-weight: 300;
-    padding: 0;
-    margin: 0;
-    min-height: 100%;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-}
-* 
-{
-    box-sizing: inherit;
+  background-color: var(--base);
+  color: var(--text);
 }
 header {
-  color: #f5a97f;
-  font-weight: bold;
-  text-align: center;
-  font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+text-align: center;
+font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
 }
 main {
-  width: 100%;
-  max-width: 700px;
-  margin: 0px auto;
-  padding: 1em;
+margin: 0px auto;
 }
 footer {
-    position: fixed; 
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
+position: fixed; 
+bottom: 0;
+left: 0;
+right: 0;
+background: var(--crust);
 }
 footer nav {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  background: #181926; 
-  text-align: center;
+display: flex;
+align-items: center;
+width: 100%; 
+text-align: center;
 }
 footer nav > * {
-  flex: 1 1 auto;
-  text-decoration: none;
-  padding: 0.5em;
-  color: #cad3f5;
-  border: 1px solid black;
+flex: 1 1 auto;
+text-decoration: none;
+padding: 0.5em;
+color: var(--text);
 }
 button {
- background-color: #24273a;
- color: #cad3f5;
- border: 1px solid #494d64;
- box-shadow: #363a4f 0 1px 1px 0;
- min-height: 2.5em;
+background-color: var(--mantle);
+color: var(--text);
+border: 1px solid var(--crust);
+box-shadow: var(--crust) 0 1px 1px 0;
+min-height: var(--space-m-l);
+font-size: var(--step--2);
 }
 button:active {
-  transform:translateY(2px);
-  box-shadow: 0 0 0;
-  outline: 0;
+transform:translateY(2px);
+box-shadow: 0 0 0;
+outline: 0;
 }
 details {
-  cursor: pointer;
+cursor: pointer;
 }
 section header {
-  text-align: left;
-  margin: 1em 0em;
+text-align: left;
+margin: var(--space-s-m) 0;
+border-bottom: 1px solid var(--crust);
+padding-bottom: var(--space-xs);
 }
 section:last-child {
-  margin-bottom: 3em;
+margin-bottom: var(--space-s);
 }
 p {
-  margin: 0.25em 0em;
+margin: var(--space-xs-s) 0em;
 }
 a {
-  color: #8aadf4;
+color: var(--text);
 }
 a:visited {
-  color: #c6a0f6;
+color: var(--text);
 }
 hr {
-  border: 1px solid #181926;
-  margin: 1em;
+margin: var(--space-s-m);
 }
 .smallbtn {
-  min-height: 1.8em;
-  border-radius: 0.3em; 
+min-height: var(--space-m);
 }
 .primarybtn {
-  background-color: #c6a0f6;
-  color: #24273a;
+color: var(--lavender);
+border-color: var(--lavender);
+}
+.save {
+color: var(--green);
+border-color: var(--green);
+float: right;
 }
 .delete {
-  color:#ed8796;
+color: var(--red);
+border-color: var(--red);
 }
 /* Styles for the calendar fragment */
 .day_picker button.today {
-  background-color: #363a4f;
+background-color: var(--crust);
 }
 .day_picker button.selected-date {      
-  background: #c6a0f6;
-  font-weight: 600;
-  color: #000000;
+background: var(--lavender);
+font-weight: 600;
+color: var(--base);
 }
 /* Styles for forms */
-input, select, textarea {
-  background: #1e2030;
-  color: #cad3f5;
-  border: 1px solid #000000;
-  padding: 0.5em;
+input, select, textarea, input[type="color"] {
+@media (prefers-color-scheme: dark) {
+   background: var(--crust);
+}
+border: 1px solid var(--crust);
+padding: 0.5em;
 }
 input[type="color"]{
-  height: 3em;
+height: 3em;
 }
 input[type="checkbox"]{
-  width: initial;
+width: initial;
 }
 fieldset {
-  border: 1px solid black;
-  background: #181926;
+border: 1px solid var(--crust);
+margin-bottom: var(--space-s-m);
 }
-/* Styles for forms */
+summary span {
+color: var(--text)
+}
+summary .header {
+margin-bottom: var(--space-s);
+}
+/* Styles for dialogs */
 dialog {
-  background: #181926;
+background: var(--base);
+color: var(--text);
+border: none;
+width: 100%;
+padding: var(--space-s-m);
 }
 dialog label {
-  display: block;
-  color: #cad3f5;
+display: block;
 }
 dialog label > * {
-  display: block;
-  width: 100%
+display: block;
+width: 100%
 }
 dialog label > span {  
-  font-weight: 600;
+font-weight: 600;
 }
-dialog fieldset {
-  border: 0;
-}
+@media (prefers-color-scheme: dark) {
 dialog::backdrop {
-  background: rgba(36, 39, 58, 0.8);
+  background: rgba(0,0,0,0.8);
+}
 }
 .details {
-  padding:0.25em; 
-  border:1px solid #000000;
-  background-color:#181926; 
-  margin: 0.5em;
+padding: var(--space-xs-s) var(--space-xs-s) 0 var(--space-xs-s); 
+border: 1px solid var(--crust);
+margin-top: var(--space-xs-s);
 }
+[aria-current]:not([aria-current="false"]) 
+{ 
+font-weight: bold; 
+background-color: var(--base);
+border-top: none;
+color: var(--lavender);
+} 

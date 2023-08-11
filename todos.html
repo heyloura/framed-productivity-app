@@ -5,15 +5,12 @@
   <meta name="description" content="a small local-storage calendar and todo list application">
   <title>Framed* Productivity App</title>
   <script src="./scripts/disappearingFrame.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="./styles/utopia.css" />
   <link rel="stylesheet" href="./styles/style.css" />
   <link rel="manifest" href="./manifest.json">
 </head>
-<body>
-  <iframe aria-busy="true" 
-      src="./fragments/_header.html" 
-      loading="lazy"
-      onload="disappear(this)"></iframe>
-  <main>
+<body class="u-container">
+  <main class="u-grid">
     <iframe aria-busy="true"
       id="main_todos"
       src="./fragments/_todos.html" 
@@ -35,19 +32,19 @@
       navigator.serviceWorker.register('serviceWorker.js', { scope: '/framed-productivity-app/' });
     }
     
-     let todos;
+    let todos;
 
-     var todosReady = new Promise(function(resolve) {
-        document.addEventListener("todos-ready", function (event) {
-           todos = event.detail;
-           resolve();
-         }, false);
-      });
+    var todosReady = new Promise(function(resolve) {
+      document.addEventListener("todos-ready", function (event) {
+          todos = event.detail;
+          resolve();
+        }, false);
+    });
 
-      Promise.all([todosReady]).then(function() {
-        todos.setDate(new Date().getTime());
+    Promise.all([todosReady]).then(function() {
+      todos.setDate(new Date().getTime());
 
-      }); // end ready all    
+    }); // end ready all     
   </script>
 </body>
 </html>

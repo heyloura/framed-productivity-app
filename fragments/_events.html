@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow" />
   <script src="../scripts/fragment.js" type="text/javascript"></script>
+  <script src="../scripts/disappearingFrame.js" type="text/javascript"></script>
 </head>
 <body>
   <section>
@@ -13,9 +14,15 @@
           <input name="id" type="hidden" />
           
           <label> 
-            <span>Start:</span>
+            <span>Date:</span>
             <input name="start" type="date" />
           </label>
+          
+          <iframe aria-busy="true"
+            id="rrule"
+            src="../fragments/_rrule.html" 
+            loading="lazy"
+            onload="disappear(this)"></iframe>
 
           <label> 
             <span>Title:</span>
@@ -29,12 +36,12 @@
 
           <label> 
             <span>Color:</span>
-            <input name="color" type="color" />
+            <input name="color" type="color" value="#ffffff" />
           </label>
         </fieldset>
         <div>
           <button formmethod="dialog">Cancel</button>
-          <button class="save_event" type="button">Save</button>
+          <button class="save_event save" type="button">Save</button>
         </div>
       </form>
     </dialog>
@@ -56,9 +63,9 @@
     // * * * * *
     ;(async () => {
       <!-- Executes only when copied into the parent DOM -->
-      if(window.top == window.self) { 
+      if(window.top == window.self) {         
         const scope = document.currentScript.getAttribute('data-scope');
-        const fragment = document.querySelector(`section[data-scope='${scope}']`);     
+        const fragment = document.querySelector(`section[data-scope='${scope}']`);
         
         class EventList {
           #scope;
@@ -76,21 +83,55 @@
              let store = localStorage.getItem(this.#storeName) != null ? 
                   localStorage.getItem(this.#storeName) : 
                   '[]';
-              let date = this.#selectedDate;
             
-             return JSON.parse(store);
+            return JSON.parse(store);
+          }
+          
+          getEventsThisMonth() {
+             let store = localStorage.getItem(this.#storeName) != null ? 
+                  localStorage.getItem(this.#storeName) : 
+                  '[]';
+             let date = this.#selectedDate;
+             let events = [];
+             
+            JSON.parse(store).forEach(function(item) {
+                let repeats = rruleUI.occursMonth(date, item.RRULE); 
+                if(!item.RRULE){
+                  events.push(item);
+                }
+              
+                repeats.forEach(function(event) {
+                  item.start = new Date(event.getFullYear(), event.getMonth(), event.getDate()).getTime();
+                  events.push({...item});
+                });
+              });
+            
+            return events;
           }
 
           getEvents() {
              let store = localStorage.getItem(this.#storeName) != null ? 
                   localStorage.getItem(this.#storeName) : 
                   '[]';
-              let date = this.#selectedDate;
+            let date = this.#selectedDate;
             
-             return JSON.parse(store).filter(function(item) {
-                return item.start != undefined && 
-                  parseInt(date) === parseInt(item.start);
-              });
+            let items = JSON.parse(store).filter(function(item) {
+              if(item.start == undefined) {
+                return;
+              }
+              if(item.RRULE) {
+                if(rruleUI.occursOn(date, item.RRULE)) {
+                  return item;
+                }
+              } else {
+                  if(parseInt(date) === parseInt(item.start)) {
+                    return item;
+                  }
+              }
+               return;
+            });
+            
+            return items;
           }
           
           getFragment() {
@@ -114,7 +155,12 @@
           setDate(date) {
             this.#fragment.querySelector('input[name="start"]').valueAsDate = new Date(parseInt(date));
             this.#selectedDate = date;
+            rruleUI.setDateEl(this.#fragment.querySelector('input[name="start"]'));
             this.#displayEvents();
+          }
+          
+          getDate() {
+            return this.#selectedDate;
           }
           
           saveEvent(data) {
@@ -153,21 +199,26 @@
                 'en-US', 
                 { year: "numeric", month: "long", day: "numeric" }
               );
+            
+            let repeatIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
+              <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192Zm3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
+            </svg>`;
 
             this.#fragment.querySelector('.list').innerHTML = `
               ${events.map(function (event) {
                   return `
                   <details>
                     <summary style="color:${event.color};">
-                      <span style="color: #cad3f5;">
-                        ${event.title}
+                      <span>
+                        ${event.title} ${event.RRULE ? repeatIcon : ''}
                       </span>
                     </summary>
                     <div class="details">
+                      <p>${event.RRULE ? `Repeats ${rruleUI.display(event.RRULE)}.` : ''}</p>
                       <p>${event.description}</p>
                       <p>
                         <button data-action="delete" data-id="${event.id}" class="delete smallbtn">Delete</button>
-                        <button data-action="edit" data-id="${event.id}" class="smallbtn">Edit</button>
+                        <button data-action="edit" data-id="${event.id}" class="smallbtn save">Edit</button>
                       </p>
                     </div>
                   </details>
@@ -176,9 +227,8 @@
             `;
           }      
         }
-        
         const eventList = new EventList(scope, fragment);
-        
+     
         /*
          *
          *  EVENT LISTENERS
@@ -189,6 +239,9 @@
 
           //the add event click
           if(event.target.classList.contains('add_event')) {
+            fragment.querySelector("form").reset();
+            var date = eventList.getDate();
+            fragment.querySelector('form input[name="start"]').valueAsDate = new Date(parseInt(date));
             fragment.querySelector(".event_dialog").showModal();
             return;
           }
@@ -208,6 +261,7 @@
 
           //the edit event click
           if(event.target.getAttribute('data-action') == "edit") {
+            fragment.querySelector("form").reset();
             let id = event.target.getAttribute('data-id');
             let item = eventList.getEvent(id);
             
@@ -217,6 +271,8 @@
             fragment.querySelector('form textarea[name="description"]').value = item.description;
             fragment.querySelector('form input[name="color"]').value = item.color;
 
+            rruleUI.editRrule(item);
+            
             fragment.querySelector(".event_dialog").showModal();
           }
 
@@ -234,11 +290,22 @@
             return;
           }
         });
+                 
+        let rruleUI;
+        var rruleReady = new Promise(function(resolve) {
+          document.addEventListener("rrule-ready", function (event) {
+             rruleUI = event.detail;
+             resolve();
+           }, false);
+        });
         
-        // tell the parent that the event list is ready
-        document.dispatchEvent(new CustomEvent('events-ready', {
-          detail: eventList
-        }));         
+        Promise.all([rruleReady]).then(function() {
+          // tell the parent that the event list is ready
+          document.dispatchEvent(new CustomEvent('events-ready', {
+            detail: eventList
+          }));           
+        }); // end ready all
+      
       } // parent DOM code       
     })(); // end IIFE
   </script>

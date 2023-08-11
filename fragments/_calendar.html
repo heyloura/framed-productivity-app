@@ -17,7 +17,7 @@
       display: flex;
       align-items: center;
       width: 100%;
-      padding: 0.5em;
+      padding: var(--space-s-m) 0;
     }
     .month_picker > * {
       flex: 1 1 auto;
@@ -136,9 +136,9 @@
             // add in the dots
             for(let detail of items) {
               var date = new Date(parseInt(detail.date));
+              
               let btn = this.#fragment.querySelector(`[data-day='${date.getDate()}']`);
-
-              if(btn.getAttribute("data-date") == detail.date)
+              if(btn.getAttribute("data-date") == `${detail.date}`)
               {
                 btn.innerHTML += `<span style="color: ${detail.color}">${detail.symbol}</span> `;
               }
@@ -167,7 +167,7 @@
             
             let firstday = new Date(date.getFullYear(), date.getMonth(), 1);
             let lastday = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-            // highligh today
+            // highlight today
             if(today.getFullYear() == date.getFullYear() &&
                 today.getMonth() == date.getMonth() )
             {
