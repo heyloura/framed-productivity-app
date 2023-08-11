@@ -86,7 +86,7 @@ border-color: var(--red);
 background-color: var(--crust);
 }
 .day_picker button.selected-date {      
-border: var(--lavender);
+border-color: var(--lavender);
 font-weight: 600;
 color: var(--lavender);
 }
