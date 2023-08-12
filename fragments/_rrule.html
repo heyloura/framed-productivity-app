@@ -81,7 +81,7 @@
     </fieldset>
   </section>
   <script>
-    // * * * * *
+     // * * * * *
     // inside the iframe you can access attributes on the iframe element
     // via the `window.frameElement`. Outside the iframe the attributes have
     // been copied to the script tag `document.currentScript`
@@ -123,7 +123,6 @@
           }
           
           occursOn(date, rruleStr) {
-            //console.log(rruleStr)
             let dateObj = new Date(parseInt(date));
             let dateLocal = new Date(dateObj.getTime() + Math.abs(dateObj.getTimezoneOffset()*60000));
 
@@ -229,7 +228,8 @@
                   break;
                 }        
               }
-              
+              rruleByDay = freq.value === 'WEEKLY' && byDay != '' ? `;BYDAY=${byDay}` : '';
+
               //adjust the start and until dates
               if(until.value != '') {
                 let untilDate = new Date(until.value);
@@ -241,8 +241,10 @@
             }
             
             // save the actual rule string to the object
-            rruleStr = `RRULE:${rruleFreq}${rruleInterval}${rruleByDay}${rruleCount}${rruleUntil}${rruleStart}${rruleTzid}`;
-            this.#fragment.querySelector('[name="RRULE"]').value = rruleStr;
+            if(this.#fragment.querySelector('[name="repeat"]').checked){
+              rruleStr = `RRULE:${rruleFreq}${rruleInterval}${rruleByDay}${rruleCount}${rruleUntil}${rruleStart}${rruleTzid}`;
+              this.#fragment.querySelector('[name="RRULE"]').value = rruleStr;
+            }
           }      
         }
         
